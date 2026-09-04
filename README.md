@@ -1,6 +1,6 @@
 # Görev — Innovex
 
-`gorev.innovex.com` üzerinde yayınlanmak üzere hazırlanmış, basit bir müşteri
+`gorev.innovexdijital.com` üzerinde yayınlanmak üzere hazırlanmış, basit bir müşteri
 görev takip panosu. Tek bir sahibi (Innovex) vardır; her müşteri için ayrı,
 tahmin edilemeyecek kadar rastgele bir link üretilir ve o linki elinde
 bulunduran herkes ilgili panoyu **salt okunur** görebilir.
@@ -61,11 +61,13 @@ ayrı bir backend servisi gerekmez:
 2. Project Settings → Environment Variables altında yukarıdaki değişkenleri
    gir (`DATABASE_URL` için Vercel Postgres/Neon/Supabase gibi herhangi bir
    yönetilen Postgres kullanılabilir).
-3. İlk deploy'dan önce (veya bir kere elle) migration'ları uygula:
-   `DATABASE_URL=... npx prisma migrate deploy`
-4. Project Settings → Domains altında `gorev.innovex.com`'u ekle; Vercel
-   sana ekleyeceğin bir CNAME/A kaydı gösterecek — bunu innovex.com'un DNS
-   sağlayıcısında tanımla.
+3. Migration'lar elle çalıştırılmaz — `npm run build` komutu
+   (`prisma generate && prisma migrate deploy && next build`) her Vercel
+   build'inde otomatik olarak bekleyen migration'ları uygular. Tek şart:
+   build başlamadan önce `DATABASE_URL` tanımlı olmalı.
+4. Project Settings → Domains altında `gorev.innovexdijital.com`'u ekle; Vercel
+   sana ekleyeceğin bir CNAME/A kaydı gösterecek — bunu innovexdijital.com'un
+   DNS sağlayıcısında tanımla.
 
 ## Klasör yapısı
 
