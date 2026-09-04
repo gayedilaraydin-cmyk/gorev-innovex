@@ -81,7 +81,7 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <BrandMark className="text-base" />
+        <BrandMark height={20} />
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-ink-600 hover:text-ink-900">
           <ArrowLeft className="h-3.5 w-3.5" />
           Panolar

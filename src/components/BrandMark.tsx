@@ -1,10 +1,18 @@
-// innoveX logosundaki renk ayrımını yansıtır: "innove" ink renginde,
-// kapanış X'i marka kırmızısında.
-export function BrandMark({ className = '' }: { className?: string }) {
+import Image from 'next/image';
+import innovexLogo from '@/assets/innovex-logo.png';
+
+// innoveX'in gerçek logo dosyası (marka ekibinden alınan orijinal PNG,
+// brand/innovex-logo-original.png içinden kırpılıp optimize edildi —
+// bkz. o klasördeki not). Metinden yeniden çizilmiş bir yaklaşıklık değil.
+export function BrandMark({ className = '', height = 22 }: { className?: string; height?: number }) {
   return (
-    <span className={`font-display font-bold tracking-tight text-ink-900 ${className}`}>
-      innove
-      <span className="text-accent">X</span>
-    </span>
+    <Image
+      src={innovexLogo}
+      alt="innoveX"
+      height={height}
+      style={{ height, width: 'auto' }}
+      className={className}
+      priority
+    />
   );
 }

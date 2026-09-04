@@ -72,7 +72,7 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
       <header className="mb-8 flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Görev</p>
-          <BrandMark className="text-xl" />
+          <BrandMark height={26} />
           <p className="mt-1 text-sm text-ink-600">Müşteri panolarını yönet, her biri için gizli bir link üret.</p>
         </div>
         <button

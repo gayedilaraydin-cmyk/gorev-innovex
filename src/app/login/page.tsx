@@ -43,7 +43,7 @@ export default function LoginPage() {
             <Lock className="h-4.5 w-4.5" />
           </div>
           <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Görev</p>
-          <BrandMark className="text-lg" />
+          <BrandMark height={24} />
           <p className="pt-1 text-sm text-ink-600">Panolara erişmek için parolayı gir.</p>
         </div>
 
