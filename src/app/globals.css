@@ -21,6 +21,8 @@
   --danger-soft: #fbe9ec;
   --pending: #2c5aa0;
   --pending-soft: #e8eefb;
+  --team: #0d9488;
+  --team-soft: #e3f5f3;
   --focus-ring: #ef3350;
 }
 
@@ -43,6 +45,8 @@
     --danger-soft: #3a1520;
     --pending: #6fa8e8;
     --pending-soft: #16283f;
+    --team: #2dd4bf;
+    --team-soft: #0f2e2a;
     --focus-ring: #f1394f;
   }
 }
@@ -65,6 +69,8 @@
   --danger-soft: #3a1520;
   --pending: #6fa8e8;
   --pending-soft: #16283f;
+  --team: #2dd4bf;
+  --team-soft: #0f2e2a;
   --focus-ring: #f1394f;
 }
 
@@ -86,6 +92,8 @@
   --color-danger-soft: var(--danger-soft);
   --color-pending: var(--pending);
   --color-pending-soft: var(--pending-soft);
+  --color-team: var(--team);
+  --color-team-soft: var(--team-soft);
   --font-display: var(--font-outfit), system-ui, sans-serif;
   --font-mono-link: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

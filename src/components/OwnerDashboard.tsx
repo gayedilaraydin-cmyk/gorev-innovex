@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2, LogOut, Plus, Trash2 } from 'lucide-react';
 import { BrandMark } from '@/components/BrandMark';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
+import { DashboardStats } from '@/components/DashboardStats';
+import type { DailyCompletionPoint, TaskStatsSummary } from '@/lib/stats';
 
 export interface BoardSummary {
   id: string;
@@ -20,7 +22,13 @@ function publicLinkFor(slug: string): string {
   return `${window.location.origin}/b/${slug}`;
 }
 
-export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[] }) {
+interface OwnerDashboardProps {
+  initialBoards: BoardSummary[];
+  stats: TaskStatsSummary;
+  series: DailyCompletionPoint[];
+}
+
+export function OwnerDashboard({ initialBoards, stats, series }: OwnerDashboardProps) {
   const router = useRouter();
   const [boards, setBoards] = useState(initialBoards);
   const [name, setName] = useState('');
@@ -81,6 +89,8 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
           Çıkış
         </button>
       </header>
+
+      <DashboardStats stats={stats} series={series} />
 
       {error && <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
 

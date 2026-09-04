@@ -10,8 +10,9 @@ datasource db {
 enum TaskStatus {
   TODO
   IN_PROGRESS
+  WAITING_CLIENT // Müşteriden bekleniyor
+  WAITING_TEAM // Ekipten bekleniyor
   DONE
-  PENDING
   CANCELLED
   MEETING_NOTES
 }
@@ -19,6 +20,18 @@ enum TaskStatus {
 enum TaskSource {
   MANUAL // panelden elle eklendi
   AI // Claude/otomasyon tarafından eklendi
+}
+
+// Aciliyet × zorluk sınıflandırması — iş akışı durumundan (TaskStatus)
+// bağımsız, opsiyonel bir öncelik etiketi. Bir görev örn. hem "Devam
+// Ediyor" durumunda hem de "Acil ve Zor" öncelikli olabilir.
+enum TaskPriority {
+  URGENT // Acil
+  NOT_URGENT // Acil Değil
+  URGENT_HARD // Acil ve Zor
+  URGENT_EASY // Acil ve Kolay
+  NOT_URGENT_HARD // Acil Değil ve Zor
+  NOT_URGENT_EASY // Acil Değil ve Kolay
 }
 
 // Bir müşteriye ait görev panosu. `slug`, gizli paylaşım linkini
@@ -37,14 +50,15 @@ model Board {
 }
 
 model Task {
-  id          String     @id @default(cuid())
+  id          String        @id @default(cuid())
   title       String
   description String?
-  status      TaskStatus @default(TODO)
-  source      TaskSource @default(MANUAL)
+  status      TaskStatus    @default(TODO)
+  source      TaskSource    @default(MANUAL)
+  priority    TaskPriority?
   dueDate     DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   boardId String
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)

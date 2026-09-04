@@ -2,9 +2,16 @@
 
 import { useState, type FormEvent } from 'react';
 import { Loader2, Plus, X } from 'lucide-react';
+import type { ApiTaskPriority } from '@/lib/tasks';
+import { PRIORITY_LABEL, PRIORITY_ORDER } from '@/lib/ui-labels';
 
 interface AddTaskFormProps {
-  onSubmit: (input: { title: string; description?: string; dueDate?: string }) => Promise<void>;
+  onSubmit: (input: {
+    title: string;
+    description?: string;
+    dueDate?: string;
+    priority?: ApiTaskPriority;
+  }) => Promise<void>;
 }
 
 export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
@@ -12,6 +19,7 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState<ApiTaskPriority | ''>('');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
@@ -23,10 +31,12 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
         title: title.trim(),
         description: description.trim() || undefined,
         dueDate: dueDate || undefined,
+        priority: priority || undefined,
       });
       setTitle('');
       setDescription('');
       setDueDate('');
+      setPriority('');
       setOpen(false);
     } finally {
       setSubmitting(false);
@@ -77,13 +87,25 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
         rows={3}
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-accent"
       />
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
           className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-ink-900 focus:border-accent"
         />
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as ApiTaskPriority | '')}
+          className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-ink-900 focus:border-accent"
+        >
+          <option value="">Öncelik yok</option>
+          {PRIORITY_ORDER.map((p) => (
+            <option key={p} value={p}>
+              {PRIORITY_LABEL[p]}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           disabled={submitting || !title.trim()}

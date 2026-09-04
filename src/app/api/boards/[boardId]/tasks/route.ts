@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAuthenticated, isValidApiKey } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { isApiTaskSource, serializeTask, SOURCE_FROM_API } from '@/lib/tasks';
+import { isApiTaskPriority, isApiTaskSource, PRIORITY_FROM_API, serializeTask, SOURCE_FROM_API } from '@/lib/tasks';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ boardId: string }> }) {
   if (!(await isAuthenticated())) {
@@ -31,6 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
     description?: unknown;
     dueDate?: unknown;
     source?: unknown;
+    priority?: unknown;
   } | null;
 
   const title = typeof body?.title === 'string' ? body.title.trim() : '';
@@ -41,6 +42,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
   const description =
     typeof body?.description === 'string' && body.description.trim() ? body.description.trim() : null;
   const dueDate = typeof body?.dueDate === 'string' && body.dueDate ? new Date(body.dueDate) : null;
+  const priority = isApiTaskPriority(body?.priority) ? PRIORITY_FROM_API[body.priority] : null;
 
   // API anahtarıyla eklenen görevler varsayılan olarak "ai" kaynaklı sayılır
   // (Claude/otomasyon), panelden eklenenler "manual" — ikisi de açıkça
@@ -49,7 +51,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
   const source = SOURCE_FROM_API[requestedSource ?? (viaApiKey && !viaOwnerSession ? 'ai' : 'manual')];
 
   const task = await prisma.task.create({
-    data: { boardId, title, description, dueDate, source },
+    data: { boardId, title, description, dueDate, source, priority },
   });
 
   return NextResponse.json({ task: serializeTask(task) }, { status: 201 });

@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AddTaskForm } from '@/components/AddTaskForm';
+import { BoardStatsSummary } from '@/components/BoardStatsSummary';
 import { BrandMark } from '@/components/BrandMark';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { TaskBoard, type TaskEditInput } from '@/components/TaskBoard';
-import type { ApiTask, ApiTaskStatus } from '@/lib/tasks';
+import { summarizeTasks } from '@/lib/stats';
+import type { ApiTask, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
 
 interface BoardManagerProps {
   boardId: string;
@@ -22,7 +24,12 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
 
   const publicLink = typeof window !== 'undefined' ? `${window.location.origin}/b/${slug}` : `/b/${slug}`;
 
-  async function handleAdd(input: { title: string; description?: string; dueDate?: string }) {
+  async function handleAdd(input: {
+    title: string;
+    description?: string;
+    dueDate?: string;
+    priority?: ApiTaskPriority;
+  }) {
     const res = await fetch(`/api/boards/${boardId}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,7 +61,9 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
     const previous = tasks;
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === taskId ? { ...t, title: input.title, description: input.description, dueDate: input.dueDate } : t,
+        t.id === taskId
+          ? { ...t, title: input.title, description: input.description, dueDate: input.dueDate, priority: input.priority }
+          : t,
       ),
     );
     const res = await fetch(`/api/boards/${boardId}/tasks/${taskId}`, {
@@ -97,6 +106,10 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
           <CopyLinkButton value={publicLink} />
         </div>
       </header>
+
+      <div className="mb-6">
+        <BoardStatsSummary stats={summarizeTasks(tasks)} />
+      </div>
 
       {error && <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
 

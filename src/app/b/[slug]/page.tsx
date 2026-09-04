@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { serializeTask } from '@/lib/tasks';
+import { summarizeTasks } from '@/lib/stats';
+import { BoardStatsSummary } from '@/components/BoardStatsSummary';
 import { BrandMark } from '@/components/BrandMark';
 import { TaskBoard } from '@/components/TaskBoard';
 
@@ -22,6 +24,8 @@ export default async function PublicBoardPage({ params }: { params: Promise<{ sl
     );
   }
 
+  const tasks = board.tasks.map(serializeTask);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <header className="mb-6">
@@ -31,7 +35,11 @@ export default async function PublicBoardPage({ params }: { params: Promise<{ sl
         <p className="mt-1 text-sm text-ink-600">Bu görünüm salt okunur — yalnızca bu linki alanlar görebilir.</p>
       </header>
 
-      <TaskBoard tasks={board.tasks.map(serializeTask)} editable={false} />
+      <div className="mb-6">
+        <BoardStatsSummary stats={summarizeTasks(tasks)} />
+      </div>
+
+      <TaskBoard tasks={tasks} editable={false} />
     </div>
   );
 }

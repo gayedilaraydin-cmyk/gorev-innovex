@@ -1,14 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Check, Pencil, Sparkles, Trash2, X } from 'lucide-react';
-import type { ApiTask, ApiTaskStatus } from '@/lib/tasks';
-import { STATUS_LABEL, STATUS_ORDER, formatDate } from '@/lib/ui-labels';
+import { Calendar, Check, Flag, Pencil, Sparkles, Trash2, X } from 'lucide-react';
+import type { ApiTask, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
+import {
+  PRIORITY_LABEL,
+  PRIORITY_ORDER,
+  STATUS_LABEL,
+  STATUS_ORDER,
+  formatDate,
+  isUrgentPriority,
+} from '@/lib/ui-labels';
 
 const STATUS_DOT: Record<ApiTaskStatus, string> = {
   todo: 'bg-ink-400',
   in_progress: 'bg-accent',
-  pending: 'bg-pending',
+  waiting_client: 'bg-pending',
+  waiting_team: 'bg-team',
   done: 'bg-success',
   cancelled: 'bg-danger',
   meeting_notes: 'bg-ink-700',
@@ -18,6 +26,7 @@ export interface TaskEditInput {
   title: string;
   description: string | null;
   dueDate: string | null;
+  priority: ApiTaskPriority | null;
 }
 
 interface TaskBoardProps {
@@ -26,6 +35,20 @@ interface TaskBoardProps {
   onStatusChange?: (taskId: string, status: ApiTaskStatus) => void;
   onDelete?: (taskId: string) => void;
   onEdit?: (taskId: string, input: TaskEditInput) => void;
+}
+
+function PriorityBadge({ priority }: { priority: ApiTaskPriority }) {
+  const urgent = isUrgentPriority(priority);
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+        urgent ? 'bg-danger-soft text-danger' : 'bg-surface-2 text-ink-600'
+      }`}
+    >
+      <Flag className="h-3 w-3" />
+      {PRIORITY_LABEL[priority]}
+    </span>
+  );
 }
 
 function TaskCard({
@@ -45,6 +68,7 @@ function TaskCard({
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? '');
   const [dueDate, setDueDate] = useState(task.dueDate ? task.dueDate.slice(0, 10) : '');
+  const [priority, setPriority] = useState<ApiTaskPriority | ''>(task.priority ?? '');
 
   function handleSave() {
     if (!title.trim() || !onEdit) return;
@@ -52,6 +76,7 @@ function TaskCard({
       title: title.trim(),
       description: description.trim() || null,
       dueDate: dueDate || null,
+      priority: priority || null,
     });
     setIsEditing(false);
   }
@@ -60,6 +85,7 @@ function TaskCard({
     setTitle(task.title);
     setDescription(task.description ?? '');
     setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '');
+    setPriority(task.priority ?? '');
     setIsEditing(false);
   }
 
@@ -79,12 +105,26 @@ function TaskCard({
           placeholder="Açıklama"
           className="w-full rounded border border-border bg-surface px-2 py-1.5 text-xs text-ink-700 focus:border-accent"
         />
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="h-8 rounded border border-border bg-surface px-2 text-xs text-ink-700 focus:border-accent"
-        />
+        <div className="flex items-center gap-1.5">
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="h-8 rounded border border-border bg-surface px-2 text-xs text-ink-700 focus:border-accent"
+          />
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as ApiTaskPriority | '')}
+            className="h-8 flex-1 rounded border border-border bg-surface px-2 text-xs text-ink-700 focus:border-accent"
+          >
+            <option value="">Öncelik yok</option>
+            {PRIORITY_ORDER.map((p) => (
+              <option key={p} value={p}>
+                {PRIORITY_LABEL[p]}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex justify-end gap-1.5 pt-1">
           <button
             onClick={handleCancel}
@@ -149,6 +189,7 @@ function TaskCard({
             Manuel
           </span>
         )}
+        {task.priority && <PriorityBadge priority={task.priority} />}
         {task.dueDate && (
           <span className="inline-flex items-center gap-1 text-[11px] text-ink-400">
             <Calendar className="h-3 w-3" />
@@ -178,8 +219,9 @@ export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }:
   const columns: Record<ApiTaskStatus, ApiTask[]> = {
     todo: [],
     in_progress: [],
+    waiting_client: [],
+    waiting_team: [],
     done: [],
-    pending: [],
     cancelled: [],
     meeting_notes: [],
   };
