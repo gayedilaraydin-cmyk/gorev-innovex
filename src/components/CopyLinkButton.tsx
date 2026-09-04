@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 export function CopyLinkButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -18,12 +19,9 @@ export function CopyLinkButton({ value }: { value: string }) {
   }
 
   return (
-    <button
-      onClick={handleCopy}
-      className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-700 hover:bg-surface-2"
-    >
+    <Button variant="secondary" size="sm" onClick={handleCopy}>
       {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
       {copied ? 'Kopyalandı' : 'Kopyala'}
-    </button>
+    </Button>
   );
 }

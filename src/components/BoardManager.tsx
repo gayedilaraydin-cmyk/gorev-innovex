@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { AppHeader } from '@/components/AppHeader';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { BoardStatsSummary } from '@/components/BoardStatsSummary';
-import { BrandMark } from '@/components/BrandMark';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { TaskBoard, type TaskEditInput } from '@/components/TaskBoard';
 import { summarizeTasks } from '@/lib/stats';
@@ -88,42 +86,40 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <BrandMark height={20} />
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-ink-600 hover:text-ink-900">
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Panolar
-        </Link>
-      </div>
+    <div className="min-h-screen bg-bg">
+      <AppHeader backHref="/" backLabel="Panolar" />
 
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-xl font-semibold text-ink-900">{boardName}</h1>
-        <div className="flex items-center gap-2">
-          <code className="max-w-[260px] truncate rounded-md bg-surface-2 px-2.5 py-1.5 font-[family-name:var(--font-mono-link)] text-xs text-ink-700">
-            {publicLink}
-          </code>
-          <CopyLinkButton value={publicLink} />
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-xl font-semibold text-ink-900">{boardName}</h1>
+          <div className="flex items-center gap-2">
+            <code className="max-w-[260px] truncate rounded-lg bg-surface-2 px-3 py-2 font-[family-name:var(--font-mono-link)] text-xs text-ink-700">
+              {publicLink}
+            </code>
+            <CopyLinkButton value={publicLink} />
+          </div>
+        </header>
+
+        <div className="mb-6">
+          <BoardStatsSummary stats={summarizeTasks(tasks)} />
         </div>
-      </header>
 
-      <div className="mb-6">
-        <BoardStatsSummary stats={summarizeTasks(tasks)} />
-      </div>
+        {error && (
+          <p className="mb-4 rounded-lg bg-danger-soft px-3.5 py-2.5 text-sm text-danger">{error}</p>
+        )}
 
-      {error && <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
+        <div className="mb-6">
+          <AddTaskForm onSubmit={handleAdd} />
+        </div>
 
-      <div className="mb-6">
-        <AddTaskForm onSubmit={handleAdd} />
-      </div>
-
-      <TaskBoard
-        tasks={tasks}
-        editable
-        onStatusChange={handleStatusChange}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+        <TaskBoard
+          tasks={tasks}
+          editable
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      </main>
     </div>
   );
 }

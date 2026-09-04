@@ -3,8 +3,11 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Loader2, LogOut, Plus, Trash2 } from 'lucide-react';
-import { BrandMark } from '@/components/BrandMark';
+import { ArrowRight, LayoutGrid, Loader2, LogOut, Plus, Trash2 } from 'lucide-react';
+import { AppHeader } from '@/components/AppHeader';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { DashboardStats } from '@/components/DashboardStats';
 import type { DailyCompletionPoint, TaskStatsSummary } from '@/lib/stats';
@@ -76,81 +79,90 @@ export function OwnerDashboard({ initialBoards, stats, series }: OwnerDashboardP
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <BrandMark height={26} />
+    <div className="min-h-screen bg-bg">
+      <AppHeader
+        right={
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-3.5 w-3.5" />
+            Çıkış
+          </Button>
+        }
+      />
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <DashboardStats stats={stats} series={series} />
+
+        {error && (
+          <p className="mb-4 rounded-lg bg-danger-soft px-3.5 py-2.5 text-sm text-danger">{error}</p>
+        )}
+
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-ink-900">Panolar</h2>
         </div>
-        <button
-          onClick={handleLogout}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-surface px-3 text-sm text-ink-700 hover:bg-surface-2"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Çıkış
-        </button>
-      </header>
 
-      <DashboardStats stats={stats} series={series} />
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <form onSubmit={handleCreate} className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Müşteri / pano adı (örn. Aph Innovex)"
+                className="sm:flex-1"
+              />
+              <Button type="submit" variant="primary" disabled={creating || !name.trim()}>
+                {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Yeni Pano
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-      {error && <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
-
-      <form onSubmit={handleCreate} className="mb-8 flex gap-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Müşteri / pano adı (örn. Aph Innovex)"
-          className="h-10 flex-1 rounded-md border border-border bg-surface px-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-accent"
-        />
-        <button
-          type="submit"
-          disabled={creating || !name.trim()}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-5 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
-        >
-          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          Yeni Pano
-        </button>
-      </form>
-
-      {boards.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border py-16 text-center">
-          <p className="text-sm text-ink-600">Henüz pano yok. Yukarıdan bir müşteri adı girip ilkini oluştur.</p>
-        </div>
-      ) : (
-        <ul className="space-y-2">
-          {boards.map((board) => (
-            <li
-              key={board.id}
-              className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface p-4"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-semibold text-ink-900">{board.name}</p>
-                <p className="text-xs text-ink-400">{board.taskCount} görev</p>
-              </div>
-
-              <code className="max-w-[240px] truncate rounded-md bg-surface-2 px-2.5 py-1.5 font-[family-name:var(--font-mono-link)] text-xs text-ink-700">
-                {publicLinkFor(board.slug)}
-              </code>
-              <CopyLinkButton value={publicLinkFor(board.slug)} />
-
-              <Link
-                href={`/panolar/${board.id}`}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-accent/30 px-3 text-xs font-medium text-accent hover:bg-accent-soft"
-              >
-                Aç
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-
-              <button
-                onClick={() => handleDelete(board.id)}
-                aria-label="Panoyu sil"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ink-400 hover:bg-danger-soft hover:text-danger"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+        {boards.length === 0 ? (
+          <Card className="border-dashed shadow-none">
+            <div className="flex flex-col items-center gap-2 py-16 text-center">
+              <LayoutGrid className="h-8 w-8 text-ink-400" />
+              <p className="text-sm text-ink-600">
+                Henüz pano yok. Yukarıdan bir müşteri adı girip ilkini oluştur.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {boards.map((board) => (
+              <Card key={board.id} className="flex flex-col">
+                <CardHeader>
+                  <div className="min-w-0">
+                    <CardTitle className="truncate text-base">{board.name}</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-400">{board.taskCount} görev</p>
+                  </div>
+                  <Button
+                    variant="danger-ghost"
+                    size="icon"
+                    onClick={() => handleDelete(board.id)}
+                    aria-label="Panoyu sil"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col justify-between gap-4">
+                  <code className="block truncate rounded-lg bg-surface-2 px-3 py-2 font-[family-name:var(--font-mono-link)] text-xs text-ink-700">
+                    {publicLinkFor(board.slug)}
+                  </code>
+                  <div className="flex items-center gap-2">
+                    <CopyLinkButton value={publicLinkFor(board.slug)} />
+                    <Link href={`/panolar/${board.id}`} className="ml-auto">
+                      <Button variant="primary" size="sm">
+                        Panoyu Aç
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

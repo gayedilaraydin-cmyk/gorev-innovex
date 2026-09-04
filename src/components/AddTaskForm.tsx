@@ -2,6 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 import { Loader2, Plus, X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Input, Textarea } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import type { ApiTaskPriority } from '@/lib/tasks';
 import { PRIORITY_LABEL, PRIORITY_ORDER } from '@/lib/ui-labels';
 
@@ -45,76 +49,63 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink hover:opacity-90"
-      >
+      <Button variant="primary" onClick={() => setOpen(true)}>
         <Plus className="h-4 w-4" />
         Görev Ekle
-      </button>
+      </Button>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-3 rounded-lg border border-border bg-surface p-4"
-    >
-      <div className="flex items-center justify-between">
-        <h3 className="font-display text-sm font-semibold text-ink-900">Yeni görev</h3>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="rounded p-1 text-ink-400 hover:bg-surface-2"
-          aria-label="Kapat"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-3 py-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-display text-sm font-semibold text-ink-900">Yeni görev</h3>
+            <Button type="button" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Kapat">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Görev başlığı"
-        required
-        autoFocus
-        className="h-9 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-accent"
-      />
-      <textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Açıklama (opsiyonel)"
-        rows={3}
-        className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-accent"
-      />
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-ink-900 focus:border-accent"
-        />
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value as ApiTaskPriority | '')}
-          className="h-9 rounded-md border border-border bg-surface px-3 text-sm text-ink-900 focus:border-accent"
-        >
-          <option value="">Öncelik yok</option>
-          {PRIORITY_ORDER.map((p) => (
-            <option key={p} value={p}>
-              {PRIORITY_LABEL[p]}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          disabled={submitting || !title.trim()}
-          className="ml-auto inline-flex h-9 items-center gap-2 rounded-md bg-accent px-4 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
-        >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          Ekle
-        </button>
-      </div>
-    </form>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Görev başlığı"
+            required
+            autoFocus
+          />
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Açıklama (opsiyonel)"
+            rows={3}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-auto"
+            />
+            <Select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as ApiTaskPriority | '')}
+              className="w-auto"
+            >
+              <option value="">Öncelik yok</option>
+              {PRIORITY_ORDER.map((p) => (
+                <option key={p} value={p}>
+                  {PRIORITY_LABEL[p]}
+                </option>
+              ))}
+            </Select>
+            <Button type="submit" variant="primary" size="sm" className="ml-auto" disabled={submitting || !title.trim()}>
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Ekle
+            </Button>
+          </div>
+        </CardContent>
+      </form>
+    </Card>
   );
 }

@@ -22,3 +22,31 @@ resized = padded.resize((target_w, round(padded.height * scale)), Image.LANCZOS)
 resized.save('src/assets/innovex-logo.png', optimize=True)
 PY
 ```
+
+`src/assets/innovex-logo-dark.png` — koyu tema sürümü. Orijinaldeki lacivert
+"innove" metni koyu (neredeyse siyah) zeminde okunmuyordu; bu dosyada aynı
+piksel geometrisi korunarak lacivert olmayan (kırmızı "X" hariç) pikseller
+açık griye (`#F5F5F7`) çevrildi. `src/components/BrandMark.tsx` iki sürümü
+de basar, `globals.css`'teki `.brand-logo-light`/`.brand-logo-dark`
+kuralları hangisinin görüneceğini (sistem tercihi + olası bir data-theme
+override'ı) belirler. Işık sürümü değişirse bu dosyayı da yeniden üretmek
+gerekir:
+
+```bash
+python3 - <<'PY'
+from PIL import Image
+im = Image.open('src/assets/innovex-logo.png').convert('RGBA')
+pixels = im.load()
+w, h = im.size
+LIGHT = (245, 245, 247)
+for y in range(h):
+    for x in range(w):
+        r, g, b, a = pixels[x, y]
+        if a == 0:
+            continue
+        is_reddish = r > g + 20 and r > b + 20
+        if not is_reddish:
+            pixels[x, y] = (*LIGHT, a)
+im.save('src/assets/innovex-logo-dark.png', optimize=True)
+PY
+```
