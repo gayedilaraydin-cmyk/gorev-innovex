@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskSource {
+  MANUAL // panelden elle eklendi
+  AI // Claude/otomasyon tarafından eklendi
+}
+
+// Bir müşteriye ait görev panosu. `slug`, gizli paylaşım linkini
+// oluşturan, tahmin edilemeyecek kadar rastgele bir soneki olan
+// benzersiz kimliktir (bkz. src/lib/slug.ts) — panonun kendisi hiçbir
+// yerde listelenmez, yalnızca linke sahip olan görebilir.
+model Board {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  tasks Task[]
+
+  @@map("boards")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  source      TaskSource @default(MANUAL)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId, status])
+  @@map("tasks")
+}
