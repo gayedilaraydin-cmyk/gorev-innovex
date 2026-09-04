@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import type { ApiTaskPriority } from '@/lib/tasks';
-import { PRIORITY_LABEL, PRIORITY_ORDER } from '@/lib/ui-labels';
+import type { ApiTaskDepartment, ApiTaskPriority } from '@/lib/tasks';
+import { DEPARTMENT_LABEL, DEPARTMENT_ORDER, PRIORITY_LABEL, PRIORITY_ORDER } from '@/lib/ui-labels';
 
 interface AddTaskFormProps {
   onSubmit: (input: {
@@ -15,6 +15,7 @@ interface AddTaskFormProps {
     description?: string;
     dueDate?: string;
     priority?: ApiTaskPriority;
+    departments?: ApiTaskDepartment[];
   }) => Promise<void>;
 }
 
@@ -24,7 +25,12 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState<ApiTaskPriority | ''>('');
+  const [departments, setDepartments] = useState<ApiTaskDepartment[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  function toggleDepartment(d: ApiTaskDepartment) {
+    setDepartments((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -36,11 +42,13 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
         description: description.trim() || undefined,
         dueDate: dueDate || undefined,
         priority: priority || undefined,
+        departments: departments.length > 0 ? departments : undefined,
       });
       setTitle('');
       setDescription('');
       setDueDate('');
       setPriority('');
+      setDepartments([]);
       setOpen(false);
     } finally {
       setSubmitting(false);
@@ -103,6 +111,29 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Ekle
             </Button>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-ink-600">Departman</label>
+            <div className="flex flex-wrap gap-1.5">
+              {DEPARTMENT_ORDER.map((d) => {
+                const selected = departments.includes(d);
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => toggleDepartment(d)}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                      selected
+                        ? 'border-accent bg-accent-soft text-accent'
+                        : 'border-border bg-surface text-ink-600 hover:bg-surface-2'
+                    }`}
+                  >
+                    {DEPARTMENT_LABEL[d]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </form>

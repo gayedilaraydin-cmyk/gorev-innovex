@@ -1,4 +1,4 @@
-import type { Task } from '@prisma/client';
+import type { Comment, Task } from '@prisma/client';
 
 export type ApiTaskStatus =
   | 'todo'
@@ -20,6 +20,15 @@ export type ApiTaskPriority =
   | 'not_urgent_hard'
   | 'not_urgent_easy';
 
+// Görevin ilgili olduğu departman(lar) — çoklu seçilebilir.
+export type ApiTaskDepartment = 'advertising' | 'business_dev' | 'design' | 'content' | 'finance';
+
+export interface ApiComment {
+  id: string;
+  body: string;
+  createdAt: string;
+}
+
 export interface ApiTask {
   id: string;
   title: string;
@@ -27,9 +36,11 @@ export interface ApiTask {
   status: ApiTaskStatus;
   source: ApiTaskSource;
   priority: ApiTaskPriority | null;
+  departments: ApiTaskDepartment[];
   dueDate: string | null;
   createdAt: string;
   updatedAt: string;
+  comments: ApiComment[];
 }
 
 const STATUS_TO_API: Record<Task['status'], ApiTaskStatus> = {
@@ -80,7 +91,37 @@ export const PRIORITY_FROM_API: Record<ApiTaskPriority, NonNullable<Task['priori
   not_urgent_easy: 'NOT_URGENT_EASY',
 };
 
-export function serializeTask(task: Task): ApiTask {
+const DEPARTMENT_TO_API: Record<Task['departments'][number], ApiTaskDepartment> = {
+  ADVERTISING: 'advertising',
+  BUSINESS_DEV: 'business_dev',
+  DESIGN: 'design',
+  CONTENT: 'content',
+  FINANCE: 'finance',
+};
+
+export const DEPARTMENT_FROM_API: Record<ApiTaskDepartment, Task['departments'][number]> = {
+  advertising: 'ADVERTISING',
+  business_dev: 'BUSINESS_DEV',
+  design: 'DESIGN',
+  content: 'CONTENT',
+  finance: 'FINANCE',
+};
+
+function serializeComment(comment: Comment): ApiComment {
+  return {
+    id: comment.id,
+    body: comment.body,
+    createdAt: comment.createdAt.toISOString(),
+  };
+}
+
+// `comments` yalnızca sorguya `include: { comments: true }` eklendiğinde
+// dolu gelir (bkz. her route'ta ilgili prisma çağrısı); eklenmediği
+// yerlerde (ör. panolar-genel istatistik sorgusu) boş dizi varsayılır —
+// o kullanımlar zaten yorumlara ihtiyaç duymuyor.
+type TaskWithRelations = Task & { comments?: Comment[] };
+
+export function serializeTask(task: TaskWithRelations): ApiTask {
   return {
     id: task.id,
     title: task.title,
@@ -88,9 +129,11 @@ export function serializeTask(task: Task): ApiTask {
     status: STATUS_TO_API[task.status],
     source: SOURCE_TO_API[task.source],
     priority: task.priority ? PRIORITY_TO_API[task.priority] : null,
+    departments: task.departments.map((d) => DEPARTMENT_TO_API[d]),
     dueDate: task.dueDate ? task.dueDate.toISOString() : null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+    comments: (task.comments ?? []).map(serializeComment),
   };
 }
 
@@ -123,4 +166,20 @@ const API_TASK_PRIORITIES: ApiTaskPriority[] = [
 
 export function isApiTaskPriority(value: unknown): value is ApiTaskPriority {
   return typeof value === 'string' && (API_TASK_PRIORITIES as string[]).includes(value);
+}
+
+const API_TASK_DEPARTMENTS: ApiTaskDepartment[] = [
+  'advertising',
+  'business_dev',
+  'design',
+  'content',
+  'finance',
+];
+
+export function isApiTaskDepartment(value: unknown): value is ApiTaskDepartment {
+  return typeof value === 'string' && (API_TASK_DEPARTMENTS as string[]).includes(value);
+}
+
+export function isApiTaskDepartmentArray(value: unknown): value is ApiTaskDepartment[] {
+  return Array.isArray(value) && value.every(isApiTaskDepartment);
 }

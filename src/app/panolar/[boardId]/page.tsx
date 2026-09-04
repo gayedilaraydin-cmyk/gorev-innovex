@@ -10,7 +10,12 @@ export default async function BoardPage({ params }: { params: Promise<{ boardId:
   const { boardId } = await params;
   const board = await prisma.board.findUnique({
     where: { id: boardId },
-    include: { tasks: { orderBy: { createdAt: 'desc' } } },
+    include: {
+      tasks: {
+        orderBy: { createdAt: 'desc' },
+        include: { comments: { orderBy: { createdAt: 'asc' } } },
+      },
+    },
   });
   if (!board) notFound();
 

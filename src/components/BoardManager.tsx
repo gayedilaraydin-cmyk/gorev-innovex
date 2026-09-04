@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppHeader } from '@/components/AppHeader';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { BoardStatsSummary } from '@/components/BoardStatsSummary';
@@ -8,7 +8,7 @@ import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { TaskBoard, type TaskEditInput } from '@/components/TaskBoard';
 import { ViewerPresenceBadge } from '@/components/ViewerPresenceBadge';
 import { summarizeTasks } from '@/lib/stats';
-import type { ApiTask, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
+import type { ApiComment, ApiTask, ApiTaskDepartment, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
 
 interface BoardManagerProps {
   boardId: string;
@@ -20,14 +20,18 @@ interface BoardManagerProps {
 export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardManagerProps) {
   const [tasks, setTasks] = useState(initialTasks);
   const [error, setError] = useState<string | null>(null);
+  const [publicLink, setPublicLink] = useState(`/b/${slug}`);
 
-  const publicLink = typeof window !== 'undefined' ? `${window.location.origin}/b/${slug}` : `/b/${slug}`;
+  useEffect(() => {
+    setPublicLink(`${window.location.origin}/b/${slug}`);
+  }, [slug]);
 
   async function handleAdd(input: {
     title: string;
     description?: string;
     dueDate?: string;
     priority?: ApiTaskPriority;
+    departments?: ApiTaskDepartment[];
   }) {
     const res = await fetch(`/api/boards/${boardId}/tasks`, {
       method: 'POST',
@@ -61,7 +65,14 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, title: input.title, description: input.description, dueDate: input.dueDate, priority: input.priority }
+          ? {
+              ...t,
+              title: input.title,
+              description: input.description,
+              dueDate: input.dueDate,
+              priority: input.priority,
+              departments: input.departments,
+            }
           : t,
       ),
     );
@@ -74,6 +85,22 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
       setTasks(previous);
       setError('Görev güncellenemedi.');
     }
+  }
+
+  async function handleAddComment(taskId: string, body: string) {
+    const res = await fetch(`/api/boards/${boardId}/tasks/${taskId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body }),
+    });
+    if (!res.ok) {
+      setError('Yorum eklenemedi.');
+      return;
+    }
+    const { comment } = (await res.json()) as { comment: ApiComment };
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, comments: [...t.comments, comment] } : t)),
+    );
   }
 
   async function handleDelete(taskId: string) {
@@ -119,6 +146,7 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
           onStatusChange={handleStatusChange}
           onDelete={handleDelete}
           onEdit={handleEdit}
+          onAddComment={handleAddComment}
         />
       </main>
     </div>

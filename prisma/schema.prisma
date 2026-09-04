@@ -34,6 +34,16 @@ enum TaskPriority {
   NOT_URGENT_EASY // Acil Değil ve Kolay
 }
 
+// Bir görevin ilgili olduğu departman(lar) — iş akışı durumundan ve
+// öncelikten bağımsız, çoklu seçilebilir bir etiket.
+enum TaskDepartment {
+  ADVERTISING // Reklam
+  BUSINESS_DEV // İş Geliştirme
+  DESIGN // Tasarım
+  CONTENT // İçerik
+  FINANCE // Finans
+}
+
 // Bir müşteriye ait görev panosu. `slug`, gizli paylaşım linkini
 // oluşturan, tahmin edilemeyecek kadar rastgele bir soneki olan
 // benzersiz kimliktir (bkz. src/lib/slug.ts) — panonun kendisi hiçbir
@@ -54,19 +64,40 @@ model Board {
 }
 
 model Task {
-  id          String        @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
+  // Toplantı Notları durumundaki görevlerde kart yüzünde gösterilmez —
+  // yalnızca kartın detay görünümünde "Notlar" olarak düzenlenir/okunur.
   description String?
-  status      TaskStatus    @default(TODO)
-  source      TaskSource    @default(MANUAL)
+  status      TaskStatus       @default(TODO)
+  source      TaskSource       @default(MANUAL)
   priority    TaskPriority?
+  departments TaskDepartment[]
   dueDate     DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   boardId String
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
+  comments Comment[]
+
   @@index([boardId, status])
   @@map("tasks")
+}
+
+// Bir görevin detay görünümünde ("kart içine girince") görünen yorum
+// akışı. Yalnızca sahip ekleyebilir (bkz. comments route'u); müşteri
+// gizli linkten salt-okunur görür — panolara "müdahale edemesinler"
+// kuralıyla tutarlı.
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+  @@map("comments")
 }

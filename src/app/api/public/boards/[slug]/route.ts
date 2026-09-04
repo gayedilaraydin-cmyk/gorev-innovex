@@ -8,7 +8,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   const board = await prisma.board.findUnique({
     where: { slug },
-    include: { tasks: { orderBy: { createdAt: 'desc' } } },
+    include: {
+      tasks: {
+        orderBy: { createdAt: 'desc' },
+        include: { comments: { orderBy: { createdAt: 'asc' } } },
+      },
+    },
   });
 
   if (!board) {

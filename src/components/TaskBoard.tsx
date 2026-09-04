@@ -14,15 +14,14 @@ import {
   type DragStartEvent,
   type DraggableAttributes,
 } from '@dnd-kit/core';
-import { Calendar, Check, Flag, GripVertical, Pencil, Sparkles, Trash2, X } from 'lucide-react';
+import { Calendar, Flag, GripVertical, MessageCircle, Sparkles, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Input, Textarea } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import type { ApiTask, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
+import { TaskDetailModal } from '@/components/TaskDetailModal';
+import type { ApiTask, ApiTaskDepartment, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
 import {
+  DEPARTMENT_LABEL,
   PRIORITY_LABEL,
-  PRIORITY_ORDER,
   STATUS_LABEL,
   STATUS_ORDER,
   formatDate,
@@ -54,6 +53,7 @@ export interface TaskEditInput {
   description: string | null;
   dueDate: string | null;
   priority: ApiTaskPriority | null;
+  departments: ApiTaskDepartment[];
 }
 
 interface TaskBoardProps {
@@ -62,6 +62,7 @@ interface TaskBoardProps {
   onStatusChange?: (taskId: string, status: ApiTaskStatus) => void;
   onDelete?: (taskId: string) => void;
   onEdit?: (taskId: string, input: TaskEditInput) => void;
+  onAddComment?: (taskId: string, body: string) => Promise<void>;
 }
 
 function PriorityBadge({ priority }: { priority: ApiTaskPriority }) {
@@ -76,103 +77,27 @@ function PriorityBadge({ priority }: { priority: ApiTaskPriority }) {
 function TaskCardBody({
   task,
   editable,
-  isEditing,
-  onStartEdit,
-  onFinishEdit,
+  onOpen,
   onDelete,
-  onEdit,
   dragAttributes,
   dragListeners,
 }: {
   task: ApiTask;
   editable: boolean;
-  isEditing: boolean;
-  onStartEdit: () => void;
-  onFinishEdit: () => void;
+  onOpen?: () => void;
   onDelete?: (taskId: string) => void;
-  onEdit?: (taskId: string, input: TaskEditInput) => void;
   dragAttributes?: DraggableAttributes;
   dragListeners?: Record<string, unknown>;
 }) {
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description ?? '');
-  const [dueDate, setDueDate] = useState(task.dueDate ? task.dueDate.slice(0, 10) : '');
-  const [priority, setPriority] = useState<ApiTaskPriority | ''>(task.priority ?? '');
-
-  function handleSave() {
-    if (!title.trim() || !onEdit) return;
-    onEdit(task.id, {
-      title: title.trim(),
-      description: description.trim() || null,
-      dueDate: dueDate || null,
-      priority: priority || null,
-    });
-    onFinishEdit();
-  }
-
-  function handleCancel() {
-    setTitle(task.title);
-    setDescription(task.description ?? '');
-    setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '');
-    setPriority(task.priority ?? '');
-    onFinishEdit();
-  }
-
-  if (isEditing) {
-    return (
-      <div className="space-y-2 rounded-lg border-2 border-accent/30 bg-surface p-3.5 shadow-[var(--shadow-raised)]">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          autoFocus
-          className="h-8 text-sm font-medium"
-        />
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder="Açıklama"
-          className="py-1.5 text-xs"
-        />
-        <div className="flex items-center gap-1.5">
-          <Input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="h-8 text-xs"
-          />
-          <Select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as ApiTaskPriority | '')}
-            size="sm"
-            className="flex-1"
-          >
-            <option value="">Öncelik yok</option>
-            {PRIORITY_ORDER.map((p) => (
-              <option key={p} value={p}>
-                {PRIORITY_LABEL[p]}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="flex justify-end gap-1.5 pt-1">
-          <Button variant="ghost" size="icon" onClick={handleCancel} aria-label="Vazgeç">
-            <X className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="primary" size="icon" onClick={handleSave} disabled={!title.trim()} aria-label="Kaydet">
-            <Check className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const isNotesCard = task.status === 'meeting_notes';
 
   return (
     <div
       {...dragAttributes}
       {...dragListeners}
-      className={`group space-y-2.5 rounded-lg border border-border bg-surface p-3.5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-raised)] ${
-        dragListeners ? 'cursor-grab touch-none active:cursor-grabbing' : ''
+      onClick={onOpen}
+      className={`group space-y-2.5 rounded-lg border border-border bg-surface p-3.5 text-left shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-raised)] ${
+        dragListeners ? 'cursor-grab touch-none active:cursor-grabbing' : onOpen ? 'cursor-pointer' : ''
       }`}
     >
       <div className="flex items-start gap-2">
@@ -180,36 +105,36 @@ function TaskCardBody({
           <GripVertical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400/0 transition-colors group-hover:text-ink-400" />
         )}
         <p className="flex-1 text-sm font-medium leading-snug text-ink-900">{task.title}</p>
-        {editable && (
+        {editable && onDelete && (
           <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={onStartEdit}
-                aria-label="Görevi düzenle"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="danger-ghost"
-                size="icon"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => onDelete(task.id)}
-                aria-label="Görevi sil"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
+            <Button
+              variant="danger-ghost"
+              size="icon"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(task.id);
+              }}
+              aria-label="Görevi sil"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
           </div>
         )}
       </div>
 
-      {task.description && (
+      {!isNotesCard && task.description && (
         <p className="text-xs leading-relaxed text-ink-600">{task.description}</p>
+      )}
+
+      {task.departments.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {task.departments.map((d) => (
+            <Badge key={d} tone="neutral">
+              {DEPARTMENT_LABEL[d]}
+            </Badge>
+          ))}
+        </div>
       )}
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -228,6 +153,12 @@ function TaskCardBody({
             {formatDate(task.dueDate)}
           </span>
         )}
+        {task.comments.length > 0 && (
+          <span className="inline-flex items-center gap-1 text-[11px] text-ink-400">
+            <MessageCircle className="h-3 w-3" />
+            {task.comments.length}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -236,24 +167,20 @@ function TaskCardBody({
 function DraggableTaskCard(props: {
   task: ApiTask;
   editable: boolean;
+  onOpen?: () => void;
   onDelete?: (taskId: string) => void;
-  onEdit?: (taskId: string, input: TaskEditInput) => void;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: props.task.id,
-    disabled: !props.editable || isEditing,
+    disabled: !props.editable,
   });
 
   return (
     <div ref={setNodeRef} className={isDragging ? 'opacity-30' : undefined}>
       <TaskCardBody
         {...props}
-        isEditing={isEditing}
-        onStartEdit={() => setIsEditing(true)}
-        onFinishEdit={() => setIsEditing(false)}
-        dragAttributes={props.editable && !isEditing ? attributes : undefined}
-        dragListeners={props.editable && !isEditing ? listeners : undefined}
+        dragAttributes={props.editable ? attributes : undefined}
+        dragListeners={props.editable ? listeners : undefined}
       />
     </div>
   );
@@ -295,8 +222,9 @@ function DroppableColumn({
   );
 }
 
-export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }: TaskBoardProps) {
+export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit, onAddComment }: TaskBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor),
@@ -314,6 +242,7 @@ export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }:
   for (const task of tasks) columns[task.status].push(task);
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : undefined;
+  const openTask = openTaskId ? tasks.find((t) => t.id === openTaskId) : undefined;
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
@@ -339,8 +268,8 @@ export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }:
               key={task.id}
               task={task}
               editable={editable}
+              onOpen={() => setOpenTaskId(task.id)}
               onDelete={onDelete}
-              onEdit={onEdit}
             />
           ))}
         </DroppableColumn>
@@ -348,7 +277,25 @@ export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }:
     </div>
   );
 
-  if (!editable) return board;
+  const modal = openTask ? (
+    <TaskDetailModal
+      task={openTask}
+      editable={editable}
+      onClose={() => setOpenTaskId(null)}
+      onSave={onEdit ? (input) => onEdit(openTask.id, input) : undefined}
+      onDelete={onDelete ? () => onDelete(openTask.id) : undefined}
+      onAddComment={onAddComment ? (body) => onAddComment(openTask.id, body) : undefined}
+    />
+  ) : null;
+
+  if (!editable) {
+    return (
+      <>
+        {board}
+        {modal}
+      </>
+    );
+  }
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -356,16 +303,11 @@ export function TaskBoard({ tasks, editable, onStatusChange, onDelete, onEdit }:
       <DragOverlay>
         {activeTask ? (
           <div className="rotate-2 opacity-95">
-            <TaskCardBody
-              task={activeTask}
-              editable={false}
-              isEditing={false}
-              onStartEdit={() => {}}
-              onFinishEdit={() => {}}
-            />
+            <TaskCardBody task={activeTask} editable={false} />
           </div>
         ) : null}
       </DragOverlay>
+      {modal}
     </DndContext>
   );
 }

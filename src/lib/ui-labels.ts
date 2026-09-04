@@ -1,4 +1,4 @@
-import type { ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
+import type { ApiTaskDepartment, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
 
 export const STATUS_LABEL: Record<ApiTaskStatus, string> = {
   todo: 'Yapılacaklar',
@@ -43,10 +43,37 @@ export function isUrgentPriority(priority: ApiTaskPriority): boolean {
   return priority === 'urgent' || priority === 'urgent_hard' || priority === 'urgent_easy';
 }
 
+export const DEPARTMENT_LABEL: Record<ApiTaskDepartment, string> = {
+  advertising: 'Reklam',
+  business_dev: 'İş Geliştirme',
+  design: 'Tasarım',
+  content: 'İçerik',
+  finance: 'Finans',
+};
+
+export const DEPARTMENT_ORDER: ApiTaskDepartment[] = [
+  'advertising',
+  'business_dev',
+  'design',
+  'content',
+  'finance',
+];
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('tr-TR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
+  });
+}
+
+// Yorumlarda tarih mutlaka görünür olmalı — bu yüzden tarih + saat birlikte.
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }

@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { isAuthenticated, isValidApiKey } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { isApiTaskPriority, isApiTaskSource, PRIORITY_FROM_API, serializeTask, SOURCE_FROM_API } from '@/lib/tasks';
+import {
+  DEPARTMENT_FROM_API,
+  isApiTaskDepartmentArray,
+  isApiTaskPriority,
+  isApiTaskSource,
+  PRIORITY_FROM_API,
+  serializeTask,
+  SOURCE_FROM_API,
+} from '@/lib/tasks';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ boardId: string }> }) {
   if (!(await isAuthenticated())) {
@@ -9,7 +17,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ boa
   }
 
   const { boardId } = await params;
-  const tasks = await prisma.task.findMany({ where: { boardId }, orderBy: { createdAt: 'desc' } });
+  const tasks = await prisma.task.findMany({
+    where: { boardId },
+    orderBy: { createdAt: 'desc' },
+    include: { comments: { orderBy: { createdAt: 'asc' } } },
+  });
   return NextResponse.json({ tasks: tasks.map(serializeTask) });
 }
 
@@ -32,6 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
     dueDate?: unknown;
     source?: unknown;
     priority?: unknown;
+    departments?: unknown;
   } | null;
 
   const title = typeof body?.title === 'string' ? body.title.trim() : '';
@@ -43,6 +56,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
     typeof body?.description === 'string' && body.description.trim() ? body.description.trim() : null;
   const dueDate = typeof body?.dueDate === 'string' && body.dueDate ? new Date(body.dueDate) : null;
   const priority = isApiTaskPriority(body?.priority) ? PRIORITY_FROM_API[body.priority] : null;
+  const departments = isApiTaskDepartmentArray(body?.departments)
+    ? body.departments.map((d) => DEPARTMENT_FROM_API[d])
+    : [];
 
   // API anahtarıyla eklenen görevler varsayılan olarak "ai" kaynaklı sayılır
   // (Claude/otomasyon), panelden eklenenler "manual" — ikisi de açıkça
@@ -51,7 +67,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ boa
   const source = SOURCE_FROM_API[requestedSource ?? (viaApiKey && !viaOwnerSession ? 'ai' : 'manual')];
 
   const task = await prisma.task.create({
-    data: { boardId, title, description, dueDate, source, priority },
+    data: { boardId, title, description, dueDate, source, priority, departments },
+    include: { comments: true },
   });
 
   return NextResponse.json({ task: serializeTask(task) }, { status: 201 });

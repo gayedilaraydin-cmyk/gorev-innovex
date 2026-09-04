@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { isApiTaskPriority, isApiTaskStatus, PRIORITY_FROM_API, serializeTask, STATUS_FROM_API } from '@/lib/tasks';
+import {
+  DEPARTMENT_FROM_API,
+  isApiTaskDepartmentArray,
+  isApiTaskPriority,
+  isApiTaskStatus,
+  PRIORITY_FROM_API,
+  serializeTask,
+  STATUS_FROM_API,
+} from '@/lib/tasks';
 
 interface RouteParams {
   params: Promise<{ boardId: string; taskId: string }>;
@@ -24,6 +32,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     status?: unknown;
     dueDate?: unknown;
     priority?: unknown;
+    departments?: unknown;
   } | null;
 
   if (body?.status !== undefined && !isApiTaskStatus(body.status)) {
@@ -31,6 +40,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
   if (body?.priority !== undefined && body.priority !== null && !isApiTaskPriority(body.priority)) {
     return NextResponse.json({ error: 'Geçersiz öncelik.' }, { status: 400 });
+  }
+  if (body?.departments !== undefined && !isApiTaskDepartmentArray(body.departments)) {
+    return NextResponse.json({ error: 'Geçersiz departman.' }, { status: 400 });
   }
 
   const task = await prisma.task.update({
@@ -47,7 +59,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       ...(body?.priority !== undefined
         ? { priority: isApiTaskPriority(body.priority) ? PRIORITY_FROM_API[body.priority] : null }
         : {}),
+      ...(isApiTaskDepartmentArray(body?.departments)
+        ? { departments: body.departments.map((d) => DEPARTMENT_FROM_API[d]) }
+        : {}),
     },
+    include: { comments: { orderBy: { createdAt: 'asc' } } },
   });
 
   return NextResponse.json({ task: serializeTask(task) });
