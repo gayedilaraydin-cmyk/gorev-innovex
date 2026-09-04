@@ -5,6 +5,7 @@ import { summarizeTasks } from '@/lib/stats';
 import { Badge } from '@/components/ui/Badge';
 import { BoardStatsSummary } from '@/components/BoardStatsSummary';
 import { BrandMark } from '@/components/BrandMark';
+import { PresenceHeartbeat } from '@/components/PresenceHeartbeat';
 import { TaskBoard } from '@/components/TaskBoard';
 
 export default async function PublicBoardPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,6 +31,7 @@ export default async function PublicBoardPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="min-h-screen bg-bg">
+      <PresenceHeartbeat slug={slug} />
       <header className="sticky top-0 z-10 border-b border-border bg-surface/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
           <BrandMark height={20} />

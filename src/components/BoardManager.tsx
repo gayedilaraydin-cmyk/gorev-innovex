@@ -6,6 +6,7 @@ import { AddTaskForm } from '@/components/AddTaskForm';
 import { BoardStatsSummary } from '@/components/BoardStatsSummary';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { TaskBoard, type TaskEditInput } from '@/components/TaskBoard';
+import { ViewerPresenceBadge } from '@/components/ViewerPresenceBadge';
 import { summarizeTasks } from '@/lib/stats';
 import type { ApiTask, ApiTaskPriority, ApiTaskStatus } from '@/lib/tasks';
 
@@ -87,7 +88,7 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
 
   return (
     <div className="min-h-screen bg-bg">
-      <AppHeader backHref="/" backLabel="Panolar" />
+      <AppHeader backHref="/" backLabel="Panolar" right={<ViewerPresenceBadge boardId={boardId} />} />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <header className="mb-6 flex flex-wrap items-center justify-between gap-3">

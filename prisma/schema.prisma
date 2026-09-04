@@ -39,10 +39,14 @@ enum TaskPriority {
 // benzersiz kimliktir (bkz. src/lib/slug.ts) — panonun kendisi hiçbir
 // yerde listelenmez, yalnızca linke sahip olan görebilir.
 model Board {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  name      String
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  name         String
+  createdAt    DateTime  @default(now())
+  // Gizli linkin en son ne zaman açıldığı — sahip panelinde "inceleyen var"
+  // göstergesini beslemek için (bkz. presence route'ları). Yaklaşık bir
+  // sinyal: son heartbeat'ten belirli bir süre geçmediyse "aktif" sayılır.
+  lastViewedAt DateTime?
 
   tasks Task[]
 
