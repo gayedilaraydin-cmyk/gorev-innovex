@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Lock } from 'lucide-react';
+import { BrandMark } from '@/components/BrandMark';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,8 +42,9 @@ export default function LoginPage() {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-accent">
             <Lock className="h-4.5 w-4.5" />
           </div>
-          <h1 className="font-display text-lg font-semibold text-ink-900">Görev — Innovex</h1>
-          <p className="text-sm text-ink-600">Panolara erişmek için parolayı gir.</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Görev</p>
+          <BrandMark className="text-lg" />
+          <p className="pt-1 text-sm text-ink-600">Panolara erişmek için parolayı gir.</p>
         </div>
 
         {error && (
@@ -62,7 +64,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitting || !password}
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-accent text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Giriş Yap

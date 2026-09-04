@@ -1,6 +1,12 @@
 import type { Task } from '@prisma/client';
 
-export type ApiTaskStatus = 'todo' | 'in_progress' | 'done';
+export type ApiTaskStatus =
+  | 'todo'
+  | 'in_progress'
+  | 'done'
+  | 'pending'
+  | 'cancelled'
+  | 'meeting_notes';
 export type ApiTaskSource = 'manual' | 'ai';
 
 export interface ApiTask {
@@ -18,12 +24,18 @@ const STATUS_TO_API: Record<Task['status'], ApiTaskStatus> = {
   TODO: 'todo',
   IN_PROGRESS: 'in_progress',
   DONE: 'done',
+  PENDING: 'pending',
+  CANCELLED: 'cancelled',
+  MEETING_NOTES: 'meeting_notes',
 };
 
 export const STATUS_FROM_API: Record<ApiTaskStatus, Task['status']> = {
   todo: 'TODO',
   in_progress: 'IN_PROGRESS',
   done: 'DONE',
+  pending: 'PENDING',
+  cancelled: 'CANCELLED',
+  meeting_notes: 'MEETING_NOTES',
 };
 
 const SOURCE_TO_API: Record<Task['source'], ApiTaskSource> = {
@@ -49,8 +61,17 @@ export function serializeTask(task: Task): ApiTask {
   };
 }
 
+const API_TASK_STATUSES: ApiTaskStatus[] = [
+  'todo',
+  'in_progress',
+  'done',
+  'pending',
+  'cancelled',
+  'meeting_notes',
+];
+
 export function isApiTaskStatus(value: unknown): value is ApiTaskStatus {
-  return value === 'todo' || value === 'in_progress' || value === 'done';
+  return typeof value === 'string' && (API_TASK_STATUSES as string[]).includes(value);
 }
 
 export function isApiTaskSource(value: unknown): value is ApiTaskSource {

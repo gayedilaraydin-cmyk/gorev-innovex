@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AddTaskForm } from '@/components/AddTaskForm';
+import { BrandMark } from '@/components/BrandMark';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
-import { TaskBoard } from '@/components/TaskBoard';
+import { TaskBoard, type TaskEditInput } from '@/components/TaskBoard';
 import type { ApiTask, ApiTaskStatus } from '@/lib/tasks';
 
 interface BoardManagerProps {
@@ -49,6 +50,24 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
     }
   }
 
+  async function handleEdit(taskId: string, input: TaskEditInput) {
+    const previous = tasks;
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, title: input.title, description: input.description, dueDate: input.dueDate } : t,
+      ),
+    );
+    const res = await fetch(`/api/boards/${boardId}/tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) {
+      setTasks(previous);
+      setError('Görev güncellenemedi.');
+    }
+  }
+
   async function handleDelete(taskId: string) {
     const previous = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
@@ -61,10 +80,13 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <Link href="/" className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-600 hover:text-ink-900">
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Panolar
-      </Link>
+      <div className="mb-6 flex items-center justify-between">
+        <BrandMark className="text-base" />
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-ink-600 hover:text-ink-900">
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Panolar
+        </Link>
+      </div>
 
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-xl font-semibold text-ink-900">{boardName}</h1>
@@ -82,7 +104,13 @@ export function BoardManager({ boardId, boardName, slug, initialTasks }: BoardMa
         <AddTaskForm onSubmit={handleAdd} />
       </div>
 
-      <TaskBoard tasks={tasks} editable onStatusChange={handleStatusChange} onDelete={handleDelete} />
+      <TaskBoard
+        tasks={tasks}
+        editable
+        onStatusChange={handleStatusChange}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
     </div>
   );
 }

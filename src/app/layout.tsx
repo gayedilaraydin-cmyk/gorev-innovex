@@ -1,22 +1,23 @@
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import './globals.css';
 
-const manrope = Manrope({
+const outfit = Outfit({
   subsets: ['latin', 'latin-ext'],
-  variable: '--font-manrope',
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-outfit',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Görev — Innovex',
-  description: 'Innovex müşterileri için görev takip panosu.',
+  title: 'Görev — innoveX',
+  description: 'innoveX müşterileri için görev takip panosu.',
   robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className={manrope.variable}>
+    <html lang="tr" className={outfit.variable}>
       <body>{children}</body>
     </html>
   );

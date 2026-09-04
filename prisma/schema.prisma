@@ -11,6 +11,9 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+  PENDING
+  CANCELLED
+  MEETING_NOTES
 }
 
 enum TaskSource {

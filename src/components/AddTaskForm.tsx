@@ -37,7 +37,7 @@ export function AddTaskForm({ onSubmit }: AddTaskFormProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-accent px-4 text-sm font-medium text-accent-ink hover:opacity-90"
+        className="inline-flex h-9 items-center gap-2 rounded-full bg-accent px-4 text-sm font-medium text-accent-ink hover:opacity-90"
       >
         <Plus className="h-4 w-4" />
         Görev Ekle

@@ -1,62 +1,71 @@
 @import "tailwindcss";
 
+/* innoveX marka paleti: lacivert/siyah ink + kırmızı vurgu (logodaki
+   "innove" + kırmızı "X" ayrımıyla aynı mantık — açık modda lacivert ink,
+   koyu modda sitenin kendi neredeyse-siyah hero zemini). */
 :root {
-  --bg: #f7f6f3;
+  --bg: #f7f7f8;
   --surface: #ffffff;
-  --surface-2: #f1efe9;
-  --border: #e6e2da;
-  --ink-900: #1b1811;
-  --ink-700: #423c30;
-  --ink-600: #6b6558;
-  --ink-400: #9c9585;
-  --accent: #b45309;
+  --surface-2: #eff0f3;
+  --border: #e3e4e9;
+  --ink-900: #0f1420;
+  --ink-700: #333846;
+  --ink-600: #5b6072;
+  --ink-400: #9498a6;
+  --accent: #ef3350;
   --accent-ink: #ffffff;
-  --accent-soft: #fdf1df;
+  --accent-soft: #fdebee;
   --success: #15803d;
   --success-soft: #e9f6ec;
-  --danger: #b42318;
-  --danger-soft: #fceeec;
-  --focus-ring: #b45309;
+  --danger: #c81e3a;
+  --danger-soft: #fbe9ec;
+  --pending: #2c5aa0;
+  --pending-soft: #e8eefb;
+  --focus-ring: #ef3350;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #16130f;
-    --surface: #211c15;
-    --surface-2: #2a2318;
-    --border: #3a3226;
-    --ink-900: #f5f1e8;
-    --ink-700: #ddd5c4;
-    --ink-600: #c7bfae;
-    --ink-400: #8c8371;
-    --accent: #f0a93a;
-    --accent-ink: #221703;
-    --accent-soft: #3a2a11;
-    --success: #4ade80;
-    --success-soft: #123321;
-    --danger: #f87171;
-    --danger-soft: #3a1815;
-    --focus-ring: #f0a93a;
+    --bg: #0a0a0c;
+    --surface: #16161a;
+    --surface-2: #1e1e23;
+    --border: #2a2a30;
+    --ink-900: #f5f5f7;
+    --ink-700: #c8c9d0;
+    --ink-600: #9a9ba5;
+    --ink-400: #6b6c77;
+    --accent: #f1394f;
+    --accent-ink: #ffffff;
+    --accent-soft: #3a1620;
+    --success: #34d399;
+    --success-soft: #0f2b22;
+    --danger: #ff6b85;
+    --danger-soft: #3a1520;
+    --pending: #6fa8e8;
+    --pending-soft: #16283f;
+    --focus-ring: #f1394f;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #16130f;
-  --surface: #211c15;
-  --surface-2: #2a2318;
-  --border: #3a3226;
-  --ink-900: #f5f1e8;
-  --ink-700: #ddd5c4;
-  --ink-600: #c7bfae;
-  --ink-400: #8c8371;
-  --accent: #f0a93a;
-  --accent-ink: #221703;
-  --accent-soft: #3a2a11;
-  --success: #4ade80;
-  --success-soft: #123321;
-  --danger: #f87171;
-  --danger-soft: #3a1815;
-  --focus-ring: #f0a93a;
+  --bg: #0a0a0c;
+  --surface: #16161a;
+  --surface-2: #1e1e23;
+  --border: #2a2a30;
+  --ink-900: #f5f5f7;
+  --ink-700: #c8c9d0;
+  --ink-600: #9a9ba5;
+  --ink-400: #6b6c77;
+  --accent: #f1394f;
+  --accent-ink: #ffffff;
+  --accent-soft: #3a1620;
+  --success: #34d399;
+  --success-soft: #0f2b22;
+  --danger: #ff6b85;
+  --danger-soft: #3a1520;
+  --pending: #6fa8e8;
+  --pending-soft: #16283f;
+  --focus-ring: #f1394f;
 }
 
 @theme inline {
@@ -75,7 +84,9 @@
   --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-display: var(--font-manrope), system-ui, sans-serif;
+  --color-pending: var(--pending);
+  --color-pending-soft: var(--pending-soft);
+  --font-display: var(--font-outfit), system-ui, sans-serif;
   --font-mono-link: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 

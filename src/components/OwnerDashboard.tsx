@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2, LogOut, Plus, Trash2 } from 'lucide-react';
+import { BrandMark } from '@/components/BrandMark';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 
 export interface BoardSummary {
@@ -70,8 +71,9 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-semibold text-ink-900">Görev — Innovex</h1>
-          <p className="text-sm text-ink-600">Müşteri panolarını yönet, her biri için gizli bir link üret.</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Görev</p>
+          <BrandMark className="text-xl" />
+          <p className="mt-1 text-sm text-ink-600">Müşteri panolarını yönet, her biri için gizli bir link üret.</p>
         </div>
         <button
           onClick={handleLogout}
@@ -94,7 +96,7 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
         <button
           type="submit"
           disabled={creating || !name.trim()}
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-accent px-4 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-accent px-5 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Yeni Pano
@@ -124,7 +126,7 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
 
               <Link
                 href={`/panolar/${board.id}`}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-accent-ink hover:opacity-90"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-accent/30 px-3 text-xs font-medium text-accent hover:bg-accent-soft"
               >
                 Aç
                 <ArrowRight className="h-3.5 w-3.5" />
