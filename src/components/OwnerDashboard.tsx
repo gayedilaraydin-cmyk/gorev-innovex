@@ -71,9 +71,7 @@ export function OwnerDashboard({ initialBoards }: { initialBoards: BoardSummary[
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Görev</p>
           <BrandMark height={26} />
-          <p className="mt-1 text-sm text-ink-600">Müşteri panolarını yönet, her biri için gizli bir link üret.</p>
         </div>
         <button
           onClick={handleLogout}
